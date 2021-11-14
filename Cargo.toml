@@ -3,6 +3,8 @@ name = "cargo-dfu"
 authors = ["Roman Kretschmer <roman@kretschmer.email>"]
 version = "0.0.1"
 edition = "2021"
+description = "cargo extension for flashing embedded rust programs via dfu"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

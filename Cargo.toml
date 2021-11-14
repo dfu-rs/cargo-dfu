@@ -1,0 +1,21 @@
+[package]
+name = "cargo-dfu"
+authors = ["Roman Kretschmer <roman@kretschmer.email>"]
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+goblin = "0.2.3"
+colored = "2.0.0"
+rusb = "0.9.0"
+pretty_env_logger = "0.3.0"
+cargo-project = "0.2.4"
+structopt = "0.3.2"
+maplit = "1.0.2"
+log = "0.4.6"
+dfu = {version = "0.4", path = "/home/roman/dfuflash/dfu"}
+
+#[dependencies.dfu]
+# path = "/home/roman/dfuflash/dfu"

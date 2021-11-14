@@ -1,13 +1,13 @@
 [package]
 name = "cargo-dfu"
 authors = ["Roman Kretschmer <roman@kretschmer.email>"]
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 description = "cargo extension for flashing embedded rust programs via dfu"
 license = "MIT"
 homepage = "https://github.com/gnxlxnxx/cargo-dfu"
 repository = "https://github.com/gnxlxnxx/cargo-dfu.git"
-categories = ["Hardware support", "Embedded developement"]
+categories = ["embedded", "hardware-support"]
 keywords = ["dfu", "flashing", "embedded"]
 readme = "Readme.md"
 

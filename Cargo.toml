@@ -1,7 +1,7 @@
 [package]
 name = "cargo-dfu"
 authors = ["Roman Kretschmer <roman@kretschmer.email>"]
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 description = "cargo extension for flashing embedded rust programs via dfu"
 license = "MIT"
@@ -22,7 +22,4 @@ cargo-project = "0.2.4"
 structopt = "0.3.2"
 maplit = "1.0.2"
 log = "0.4.6"
-dfu = {version = "0.4", path = "/home/roman/dfuflash/dfu"}
-
-#[dependencies.dfu]
-# path = "/home/roman/dfuflash/dfu"
+dfu = "0.4"

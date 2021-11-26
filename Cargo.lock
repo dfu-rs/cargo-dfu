@@ -75,7 +75,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "cargo-dfu"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "cargo-project",
  "colored",
@@ -156,7 +156,9 @@ dependencies = [
 
 [[package]]
 name = "dfu"
-version = "0.4.3"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb1d1eb7e47b3cba338775698712a8cb285aa15d45e58329c59411a55fbc1b98"
 dependencies = [
  "log",
  "nix",

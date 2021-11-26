@@ -1,0 +1,2 @@
+# gd32vf103
+SUBSYSTEMS=="usb" ATTRS{idVendor}=="28e9" ATTRS{idProduct}=="0189" MODE:="0666"

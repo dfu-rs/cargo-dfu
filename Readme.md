@@ -30,7 +30,7 @@ cargo dfu
 #### specifying the chip
 
 ```bash
-cargo dfu --chip stm32f4
+cargo dfu --chip stm32
 ```
 
 #### specifying the vid and pid

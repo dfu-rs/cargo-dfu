@@ -84,7 +84,7 @@ pub fn flash_bin(
 
 pub fn vendor_map() -> std::collections::HashMap<String, Vec<(u16, u16)>> {
     maplit::hashmap! {
-        "stm32f4".to_string() => vec![(0x0483, 0xdf11)],
+        "stm32".to_string() => vec![(0x0483, 0xdf11)],
         "gd32vf103".to_string() =>  vec![(0x28e9, 0x0189)],
     }
 }

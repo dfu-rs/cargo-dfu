@@ -27,6 +27,12 @@ cargo dfu <args> --vid <vid> --pid <pid>
 cargo dfu 
 ```
 
+#### specifying the chip
+
+```bash
+cargo dfu --chip stm32f4
+```
+
 #### specifying the vid and pid
 
 ```bash
@@ -36,8 +42,12 @@ cargo dfu --vid 0x483 --pid 0xdf11
 ## Add chip definitions
 feel free to open a PR to add chips to this
 
-## Roadmap
-- [ ] add chip to vendor map so one can optionally use --chip to specify the desired chip
-- [ ] add some more chips to the crate (like the gd32vf103)
-- [ ] make this crate multi-platform (PR to either the dfu crate to use rusb or the usbapi to add platform support)
+## Notes
+some chips like the gd32vf103 need additional udev rules therefor you need to copy the rules from the udev file into /etc/udev/rules.d/
+```lang=bash
+sudo cp udev.rules /etc/udev/rules.d/cargo-dfu.rules
+```
 
+## Roadmap
+- [ ] make this crate multi-platform (PR to either the dfu crate to use rusb or the usbapi to add platform support)
+- [ ] check if multiple chips are connected 

@@ -17,6 +17,13 @@ fn main() {
     // Skip the first arg which is the calling application name.
     let opt = Opt::from_iter(std::env::args().skip(1));
 
+    if opt.list_chips {
+        for vendor in vendor_map() {
+            println!("{}", vendor.0);
+        }
+        return;
+    }
+
     // Try and get the cargo project information.
     let project = cargo_project::Project::query(".").expect("Couldn't parse the Cargo.toml");
 
@@ -51,7 +58,7 @@ fn main() {
 
     // todo, keep as iter. difficult because we want to filter map remove two items at once.
     // Remove our args as cargo build does not understand them.
-    let flags = ["--pid", "--vid"].iter();
+    let flags = ["--pid", "--vid", "--chip"].iter();
     for flag in flags {
         if let Some(index) = args.iter().position(|x| x == flag) {
             args.remove(index);
@@ -76,6 +83,22 @@ fn main() {
     let d = if let (Some(v), Some(p)) = (opt.vid, opt.pid) {
         open_device_with_vid_pid(v, p)
             .expect("Are you sure device is plugged in and in bootloader mode?")
+    } else if let Some(c) = opt.chip {
+        println!("    {} for a connected {}.", "Searching".green().bold(), c);
+
+        let mut device: Option<rusb::DeviceHandle<GlobalContext>> = None;
+
+        let vendor = vendor_map();
+
+        if let Some(products) = vendor.get(&c) {
+            for (v, p) in products {
+                if let Some(d) = open_device_with_vid_pid(*v, *p) {
+                    device = Some(d);
+                    break;
+                }
+            }
+        }
+        device.expect("Are you sure device is plugged in and in bootloader mode?")
     } else {
         println!(
             "    {} for a connected device with known vid/pid pair.",
@@ -90,11 +113,9 @@ fn main() {
 
         let mut device: Option<rusb::DeviceHandle<GlobalContext>> = None;
 
-        let vendor = vendor_map();
-
         for d in devices {
-            if let Some(products) = vendor.get(&d.vendor_id()) {
-                if products.contains(&d.product_id()) {
+            for vendor in vendor_map() {
+                if vendor.1.contains(&(d.vendor_id(), d.product_id())) {
                     if let Some(d) = open_device_with_vid_pid(d.vendor_id(), d.product_id()) {
                         device = Some(d);
                         break;
@@ -107,7 +128,7 @@ fn main() {
 
     println!(
         "    {} {} {}",
-        "Trying ".green().bold(),
+        "Found ".green().bold(),
         d.read_manufacturer_string_ascii(&d.device().device_descriptor().unwrap())
             .unwrap(),
         d.read_product_string_ascii(&d.device().device_descriptor().unwrap())
@@ -182,4 +203,9 @@ struct Opt {
     pid: Option<u16>,
     #[structopt(name = "vid", long = "vid",  parse(try_from_str = parse_hex_16))]
     vid: Option<u16>,
+
+    #[structopt(name = "chip", long = "chip")]
+    chip: Option<String>,
+    #[structopt(name = "list-chips", long = "list-chips")]
+    list_chips: bool,
 }

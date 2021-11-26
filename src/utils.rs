@@ -8,14 +8,15 @@ use std::{fs::File, io::Read};
 pub enum UtilError {
     Elf(goblin::error::Error),
     Dfu(dfu::error::Error),
-    File(std::io::Error)
+    File(std::io::Error),
 }
 
 /// Returns a contiguous bin with 0s between non-contiguous sections and starting address from an elf.
 pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
     let mut file = File::open(path).map_err(|e| UtilError::File(e))?;
     let mut buffer = vec![];
-    file.read_to_end(&mut buffer).map_err(|e| UtilError::File(e))?;
+    file.read_to_end(&mut buffer)
+        .map_err(|e| UtilError::File(e))?;
 
     let binary = goblin::elf::Elf::parse(buffer.as_slice()).map_err(|e| UtilError::Elf(e))?;
 
@@ -58,9 +59,11 @@ pub fn flash_bin(
     address: u32,
     d: &rusb::Device<GlobalContext>,
 ) -> Result<(), UtilError> {
-    let mut dfu = dfu::Dfu::from_bus_device(d.bus_number(), d.address(), 0_u32, 0_u32).map_err(|e| UtilError::Dfu(e))?;
+    let mut dfu = dfu::Dfu::from_bus_device(d.bus_number(), d.address(), 0_u32, 0_u32)
+        .map_err(|e| UtilError::Dfu(e))?;
     if binary.len() < 2048 {
-        dfu.write_flash_from_slice(address, binary).map_err(|e| UtilError::Dfu(e))?;
+        dfu.write_flash_from_slice(address, binary)
+            .map_err(|e| UtilError::Dfu(e))?;
     } else {
         // hacky bug workaround
         std::fs::write("target/out.bin", binary).map_err(|e| UtilError::File(e))?;
@@ -71,15 +74,17 @@ pub fn flash_bin(
                 .map_err(|e| UtilError::File(e))?,
             address,
             None,
-        ).map_err(|e| UtilError::Dfu(e))?;
+        )
+        .map_err(|e| UtilError::Dfu(e))?;
         std::fs::remove_file("target/out.bin").map_err(|e| UtilError::File(e))?;
     }
 
     Ok(())
 }
 
-pub fn vendor_map() -> std::collections::HashMap<u16, Vec<u16>> {
+pub fn vendor_map() -> std::collections::HashMap<String, Vec<(u16, u16)>> {
     maplit::hashmap! {
-        0x0483 => vec![0xdf11],
+        "stm32f4".to_string() => vec![(0x0483, 0xdf11)],
+        "gd32vf103".to_string() =>  vec![(0x28e9, 0x0189)],
     }
 }

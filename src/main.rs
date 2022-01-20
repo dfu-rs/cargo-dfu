@@ -4,10 +4,11 @@ use crate::utils::{elf_to_bin, flash_bin, vendor_map};
 use colored::*;
 use rusb::{open_device_with_vid_pid, GlobalContext};
 
+use clap::Parser;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::time::Instant;
-use structopt::StructOpt;
+// use structopt::StructOpt;
 
 fn main() {
     // Initialize the logging backend.
@@ -15,7 +16,7 @@ fn main() {
 
     // Get commandline options.
     // Skip the first arg which is the calling application name.
-    let opt = Opt::from_iter(std::env::args().skip(1));
+    let opt = Opt::parse_from(std::env::args());
 
     if opt.list_chips {
         for vendor in vendor_map() {
@@ -176,36 +177,36 @@ fn parse_hex_16(input: &str) -> Result<u16, std::num::ParseIntError> {
     }
 }
 
-#[allow(unused)]
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
+#[clap(author, version, about, long_about = None)]
 struct Opt {
     // `cargo build` arguments
-    #[structopt(name = "binary", long = "bin")]
+    #[clap(name = "binary", long = "bin")]
     bin: Option<String>,
-    #[structopt(name = "example", long = "example")]
+    #[clap(name = "example", long = "example")]
     example: Option<String>,
-    #[structopt(name = "package", short = "p", long = "package")]
+    #[clap(name = "package", short = 'p', long = "package")]
     package: Option<String>,
-    #[structopt(name = "release", long = "release")]
+    #[clap(name = "release", long = "release")]
     release: bool,
-    #[structopt(name = "target", long = "target")]
+    #[clap(name = "target", long = "target")]
     target: Option<String>,
-    #[structopt(name = "PATH", long = "manifest-path", parse(from_os_str))]
+    #[clap(name = "PATH", long = "manifest-path", parse(from_os_str))]
     manifest_path: Option<PathBuf>,
-    #[structopt(long)]
+    #[clap(long)]
     no_default_features: bool,
-    #[structopt(long)]
+    #[clap(long)]
     all_features: bool,
-    #[structopt(long)]
+    #[clap(long)]
     features: Vec<String>,
 
-    #[structopt(name = "pid", long = "pid", parse(try_from_str = parse_hex_16))]
+    #[clap(name = "pid", long = "pid", parse(try_from_str = parse_hex_16))]
     pid: Option<u16>,
-    #[structopt(name = "vid", long = "vid",  parse(try_from_str = parse_hex_16))]
+    #[clap(name = "vid", long = "vid",  parse(try_from_str = parse_hex_16))]
     vid: Option<u16>,
 
-    #[structopt(name = "chip", long = "chip")]
+    #[clap(name = "chip", long = "chip")]
     chip: Option<String>,
-    #[structopt(name = "list-chips", long = "list-chips")]
+    #[clap(name = "list-chips", long = "list-chips")]
     list_chips: bool,
 }

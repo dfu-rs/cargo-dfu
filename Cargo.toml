@@ -22,4 +22,7 @@ cargo-project = "0.2.4"
 structopt = "0.3.2"
 maplit = "1.0.2"
 log = "0.4.6"
-dfu = "0.4"
+
+[dependencies.dfu-libusb]
+git = "https://github.com/dfu-rs/dfu-libusb.git"
+rev = "84d05c366671bc2608c8d2b68fe79a67a327d3a3"

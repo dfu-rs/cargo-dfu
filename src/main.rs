@@ -16,7 +16,7 @@ fn main() {
 
     // Get commandline options.
     // Skip the first arg which is the calling application name.
-    let opt = Opt::parse_from(std::env::args());
+    let opt = Opt::parse_from(std::env::args().skip(1));
 
     if opt.list_chips {
         for vendor in vendor_map() {

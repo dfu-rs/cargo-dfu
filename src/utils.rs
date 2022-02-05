@@ -54,11 +54,7 @@ pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
     Ok((data, start_address as u32))
 }
 
-pub fn flash_bin(
-    binary: &[u8],
-    address: u32,
-    d: &rusb::Device<GlobalContext>,
-) -> Result<(), UtilError> {
+pub fn flash_bin(binary: &[u8], d: &rusb::Device<GlobalContext>) -> Result<(), UtilError> {
     let mut dfu = dfu_libusb::DfuLibusb::open(
         &rusb::Context::new().unwrap(),
         d.device_descriptor().unwrap().vendor_id(),

@@ -7,7 +7,7 @@ use std::{fs::File, io::Read};
 #[derive(Debug)]
 pub enum UtilError {
     Elf(goblin::error::Error),
-    Dfu(dfu::error::Error),
+    Dfu(dfu_libusb::Error),
     File(std::io::Error),
 }
 
@@ -54,31 +54,27 @@ pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
     Ok((data, start_address as u32))
 }
 
-pub fn flash_bin(
-    binary: &[u8],
-    address: u32,
-    d: &rusb::Device<GlobalContext>,
-) -> Result<(), UtilError> {
-    let mut dfu = dfu::Dfu::from_bus_device(d.bus_number(), d.address(), 0_u32, 0_u32)
-        .map_err(|e| UtilError::Dfu(e))?;
-    if binary.len() < 2048 {
-        dfu.write_flash_from_slice(address, binary)
-            .map_err(|e| UtilError::Dfu(e))?;
-    } else {
-        // hacky bug workaround
-        std::fs::write("target/out.bin", binary).map_err(|e| UtilError::File(e))?;
-        dfu.download_raw(
-            &mut std::fs::OpenOptions::new()
-                .read(true)
-                .open("target/out.bin")
-                .map_err(|e| UtilError::File(e))?,
-            address,
-            None,
-        )
-        .map_err(|e| UtilError::Dfu(e))?;
-        std::fs::remove_file("target/out.bin").map_err(|e| UtilError::File(e))?;
-    }
+pub fn flash_bin(binary: &[u8], d: &rusb::Device<GlobalContext>) -> Result<(), UtilError> {
+    let mut dfu = dfu_libusb::DfuLibusb::open(
+        &rusb::Context::new().unwrap(),
+        d.device_descriptor().unwrap().vendor_id(),
+        d.device_descriptor().unwrap().product_id(),
+        0,
+        0,
+    )
+    .map_err(|e| UtilError::Dfu(e))?;
 
+    std::fs::write("target/out.bin", binary).map_err(|e| UtilError::File(e))?;
+    dfu.download(
+        &mut std::fs::OpenOptions::new()
+            .read(true)
+            .open("target/out.bin")
+            .map_err(|e| UtilError::File(e))?,
+        std::fs::metadata("target/out.bin")
+            .map_err(|e| UtilError::File(e))?
+            .len() as u32,
+    )
+    .unwrap();
     Ok(())
 }
 

@@ -22,4 +22,4 @@ cargo-project = "0.2.4"
 clap = {version = "3.0.10", features=["derive"]}
 maplit = "1.0.2"
 log = "0.4.6"
-dfu = "0.4"
+dfu-libusb = "0.2.0"

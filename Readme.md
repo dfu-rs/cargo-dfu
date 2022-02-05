@@ -49,5 +49,4 @@ sudo cp udev.rules /etc/udev/rules.d/cargo-dfu.rules
 ```
 
 ## Roadmap
-- [ ] make this crate multi-platform (PR to either the dfu crate to use rusb or the usbapi to add platform support)
 - [ ] check if multiple chips are connected 

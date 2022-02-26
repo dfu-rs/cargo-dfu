@@ -1,7 +1,7 @@
 [package]
 name = "cargo-dfu"
 authors = ["Roman Kretschmer <roman@kretschmer.email>"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "cargo extension for flashing embedded rust programs via dfu"
 license = "MIT"
@@ -18,7 +18,7 @@ goblin = "0.2.3"
 colored = "2.0.0"
 rusb = "0.9.0"
 pretty_env_logger = "0.3.0"
-cargo-project = "0.2.4"
+cargo-project = "0.2.7"
 clap = {version = "3.0.10", features=["derive"]}
 maplit = "1.0.2"
 log = "0.4.6"

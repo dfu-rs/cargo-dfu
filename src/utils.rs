@@ -64,17 +64,7 @@ pub fn flash_bin(binary: &[u8], d: &rusb::Device<GlobalContext>) -> Result<(), U
     )
     .map_err(|e| UtilError::Dfu(e))?;
 
-    std::fs::write("target/out.bin", binary).map_err(|e| UtilError::File(e))?;
-    dfu.download(
-        &mut std::fs::OpenOptions::new()
-            .read(true)
-            .open("target/out.bin")
-            .map_err(|e| UtilError::File(e))?,
-        std::fs::metadata("target/out.bin")
-            .map_err(|e| UtilError::File(e))?
-            .len() as u32,
-    )
-    .unwrap();
+    dfu.download_from_slice(binary).unwrap();
     Ok(())
 }
 

@@ -49,7 +49,9 @@ fn main() {
         .path(
             artifact,
             profile,
-            opt.target.as_deref(),
+            opt.target
+                .as_deref()
+                .map(|target| target.trim_end_matches(".json")),
             "x86_64-unknown-linux-gnu",
         )
         .expect("Couldn't find the build result");

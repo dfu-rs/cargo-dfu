@@ -72,7 +72,7 @@ checksum = "c4872d67bab6358e59559027aa3b9157c53d9358c51423c17554809a8858e0f8"
 
 [[package]]
 name = "cargo-dfu"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cargo-project",
  "clap",
@@ -168,20 +168,22 @@ dependencies = [
 
 [[package]]
 name = "dfu-core"
-version = "0.2.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00fab7382221c801db4853a1ff338bb1281e8f2f9b456e888793fef61c4d890c"
+checksum = "6c3fb34e94bedc8bbd76dfc9f6774896fadbbedac6108fa8a3c46a0125bde188"
 dependencies = [
  "bytes",
  "displaydoc",
+ "log",
+ "pretty-hex",
  "thiserror",
 ]
 
 [[package]]
 name = "dfu-libusb"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c2092d59a31cc15f8e9a916ff6b020a0fe794b1ec8626d08eefeb7ad2bcb8f7"
+checksum = "00b4d756e08681e12abb006bbcf557b45c89c189c32e08193cb773b9177f837e"
 dependencies = [
  "dfu-core",
  "libusb1-sys",
@@ -401,6 +403,12 @@ name = "plain"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
+
+[[package]]
+name = "pretty-hex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6fa0831dd7cc608c38a5e323422a0077678fa5744aa2be4ad91c4ece8eec8d5"
 
 [[package]]
 name = "pretty_env_logger"

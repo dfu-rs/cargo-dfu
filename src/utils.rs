@@ -13,12 +13,11 @@ pub enum UtilError {
 
 /// Returns a contiguous bin with 0s between non-contiguous sections and starting address from an elf.
 pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
-    let mut file = File::open(path).map_err(|e| UtilError::File(e))?;
+    let mut file = File::open(path).map_err(UtilError::File)?;
     let mut buffer = vec![];
-    file.read_to_end(&mut buffer)
-        .map_err(|e| UtilError::File(e))?;
+    file.read_to_end(&mut buffer).map_err(UtilError::File)?;
 
-    let binary = goblin::elf::Elf::parse(buffer.as_slice()).map_err(|e| UtilError::Elf(e))?;
+    let binary = goblin::elf::Elf::parse(buffer.as_slice()).map_err(UtilError::Elf)?;
 
     let mut start_address: u64 = 0;
     let mut last_address: u64 = 0;
@@ -30,7 +29,7 @@ pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
         .filter(|ph| {
             ph.p_type == PT_LOAD
                 && ph.p_filesz > 0
-                && ph.p_offset >= binary.header.e_ehsize as u64
+                && ph.p_offset >= u64::from(binary.header.e_ehsize)
                 && ph.is_read()
         })
         .enumerate()
@@ -51,7 +50,11 @@ pub fn elf_to_bin(path: PathBuf) -> Result<(Vec<u8>, u32), UtilError> {
         last_address = ph.p_paddr + ph.p_filesz;
     }
 
-    Ok((data, start_address as u32))
+    Ok((
+        data,
+        u32::try_from(start_address)
+            .map_err(|e| UtilError::Elf(goblin::error::Error::Malformed(e.to_string())))?,
+    ))
 }
 
 pub fn flash_bin(binary: &[u8], d: &rusb::Device<GlobalContext>) -> Result<(), UtilError> {
@@ -62,9 +65,9 @@ pub fn flash_bin(binary: &[u8], d: &rusb::Device<GlobalContext>) -> Result<(), U
         0,
         0,
     )
-    .map_err(|e| UtilError::Dfu(e))?;
+    .map_err(UtilError::Dfu)?;
 
-    dfu.download_from_slice(binary).unwrap();
+    dfu.download_from_slice(binary).map_err(UtilError::Dfu)?;
     Ok(())
 }
 

@@ -1,7 +1,7 @@
 mod utils;
 
 use crate::utils::{elf_to_bin, flash_bin, vendor_map};
-use colored::*;
+use colored::Colorize;
 use rusb::{open_device_with_vid_pid, GlobalContext};
 
 use clap::Parser;
@@ -83,9 +83,8 @@ fn main() {
         exit_with_process_status(status)
     }
 
-    let d = if let (Some(v), Some(p)) = (opt.vid, opt.pid) {
+    let Some(d) = (if let (Some(v), Some(p)) = (opt.vid, opt.pid) {
         open_device_with_vid_pid(v, p)
-            .expect("Are you sure device is plugged in and in bootloader mode?")
     } else if let Some(c) = opt.chip {
         println!("    {} for a connected {}.", "Searching".green().bold(), c);
 
@@ -101,7 +100,8 @@ fn main() {
                 }
             }
         }
-        device.expect("Are you sure device is plugged in and in bootloader mode?")
+
+        device
     } else {
         println!(
             "    {} for a connected device with known vid/pid pair.",
@@ -126,7 +126,14 @@ fn main() {
                 }
             }
         }
-        device.expect("Are you sure device is plugged in and in bootloader mode?")
+
+        device
+    }) else {
+        println!(
+            "    {} finding connected devices, have you placed it into bootloader mode?",
+            "Error".red().bold()
+        );
+        std::process::exit(101);
     };
 
     println!(
@@ -145,7 +152,17 @@ fn main() {
     // Start timer.
     let instant = Instant::now();
 
-    flash_bin(&binary, &d.device()).unwrap();
+    // if let Err(e) = flash_bin(&binary, &d.device()) {
+    //     println!("    {} flashing binary: {:?}", "Error".red().bold(), e);
+    // }
+
+    match flash_bin(&binary, &d.device()) {
+        Err(utils::UtilError::Dfu(dfu_libusb::Error::LibUsb(rusb::Error::NoDevice))) => {
+            // works for me?
+        }
+        Err(e) => println!("    {} flashing binary: {:?}", "Error".red().bold(), e),
+        _ => (),
+    }
 
     // Stop timer.
     let elapsed = instant.elapsed();
@@ -170,11 +187,10 @@ fn exit_with_process_status(status: std::process::ExitStatus) -> ! {
 }
 
 fn parse_hex_16(input: &str) -> Result<u16, std::num::ParseIntError> {
-    if let Some(stripped) = input.strip_prefix("0x") {
-        u16::from_str_radix(stripped, 16)
-    } else {
-        input.parse::<u16>()
-    }
+    input.strip_prefix("0x").map_or_else(
+        || input.parse(),
+        |stripped| u16::from_str_radix(stripped, 16),
+    )
 }
 
 #[derive(Debug, Parser)]

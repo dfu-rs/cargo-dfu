@@ -6,8 +6,10 @@ use std::{fs::File, io::Read};
 
 #[derive(Debug)]
 pub enum UtilError {
+    #[allow(dead_code)]
     Elf(goblin::error::Error),
     Dfu(dfu_libusb::Error),
+    #[allow(dead_code)]
     File(std::io::Error),
 }
 

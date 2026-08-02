@@ -13,6 +13,7 @@ use std::time::Instant;
 fn main() {
     // Initialize the logging backend.
     pretty_env_logger::init();
+    set_rusb_log();
 
     // Get commandline options.
     // Skip the first arg which is the calling application name.
@@ -225,4 +226,75 @@ struct Opt {
     chip: Option<String>,
     #[clap(name = "list-chips", long = "list-chips")]
     list_chips: bool,
+}
+
+/// Set the logger for [`rusb`].
+///
+/// Call after reading the environment and setting the log level in the log crate.
+fn set_rusb_log() {
+    use rusb::UsbContext;
+    let mut context = GlobalContext::default();
+
+    // pass the log level to the
+    context.set_log_level(match log::max_level() {
+        log::LevelFilter::Off => rusb::LogLevel::None,
+        log::LevelFilter::Error => rusb::LogLevel::Error,
+        log::LevelFilter::Warn => rusb::LogLevel::Warning,
+        log::LevelFilter::Info => rusb::LogLevel::Info,
+        log::LevelFilter::Debug | log::LevelFilter::Trace => rusb::LogLevel::Debug,
+    });
+
+    // TODO when `rusb` is bumped to 0.9.4, this can be used instead of the following:
+    // <GlobalContext as rusb::UsbContext>::set_log_callback(
+    //     &mut GlobalContext::default(),
+    //     Box::new(|level, mut msg| {
+    //         if msg.as_bytes().last() == Some(&b'\n') {
+    //             msg.pop();
+    //         }
+    //         match level {
+    //             rusb::LogLevel::None => {}
+    //             rusb::LogLevel::Error => log::error!("{}", msg),
+    //             rusb::LogLevel::Warning => log::warn!("{}", msg),
+    //             rusb::LogLevel::Debug => log::debug!("{}", msg),
+    //             rusb::LogLevel::Info => log::info!("{}", msg),
+    //         }
+    //     }),
+    //     rusb::LogCallbackMode::Global,
+    // );
+
+    // See https://docs.rs/rusb/0.9.4/src/rusb/context.rs.html#70
+    extern "system" fn static_log_callback(
+        // context is not used since the print is global
+        _context: *mut libusb1_sys::libusb_context,
+        level: libc::c_int,
+        text: *mut libc::c_void,
+    ) {
+        // SAFETY: See the original implementation and consult there:
+        //         https://docs.rs/rusb/0.9.4/src/rusb/context.rs.html#70
+        let c_str: &std::ffi::CStr =
+            unsafe { std::ffi::CStr::from_ptr(text as *const libc::c_char) };
+        let str_slice: &str = c_str.to_str().unwrap_or("");
+        let mut msg = str_slice.to_owned();
+        if msg.as_bytes().last() == Some(&b'\n') {
+            msg.pop();
+        }
+
+        // See https://docs.rs/rusb/0.9.4/src/rusb/context.rs.html#347
+        match level {
+            libusb1_sys::constants::LIBUSB_LOG_LEVEL_ERROR => log::error!("{}", msg),
+            libusb1_sys::constants::LIBUSB_LOG_LEVEL_WARNING => log::warn!("{}", msg),
+            libusb1_sys::constants::LIBUSB_LOG_LEVEL_DEBUG => log::debug!("{}", msg),
+            libusb1_sys::constants::LIBUSB_LOG_LEVEL_INFO => log::info!("{}", msg),
+            _ => {}
+        }
+    }
+
+    // See https://docs.rs/rusb/0.9.4/src/rusb/context.rs.html#70
+    unsafe {
+        libusb1_sys::libusb_set_log_cb(
+            context.as_raw(),
+            Some(static_log_callback),
+            libusb1_sys::constants::LIBUSB_LOG_CB_GLOBAL,
+        );
+    }
 }

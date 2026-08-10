@@ -235,7 +235,7 @@ fn set_rusb_log() {
     use rusb::UsbContext;
     let mut context = GlobalContext::default();
 
-    // pass the log level to the
+    // pass the log level to the context
     context.set_log_level(match log::max_level() {
         log::LevelFilter::Off => rusb::LogLevel::None,
         log::LevelFilter::Error => rusb::LogLevel::Error,
@@ -244,23 +244,13 @@ fn set_rusb_log() {
         log::LevelFilter::Debug | log::LevelFilter::Trace => rusb::LogLevel::Debug,
     });
 
-    // TODO when `rusb` is bumped to 0.9.4, this can be used instead of the following:
-    // <GlobalContext as rusb::UsbContext>::set_log_callback(
-    //     &mut GlobalContext::default(),
-    //     Box::new(|level, mut msg| {
-    //         if msg.as_bytes().last() == Some(&b'\n') {
-    //             msg.pop();
-    //         }
-    //         match level {
-    //             rusb::LogLevel::None => {}
-    //             rusb::LogLevel::Error => log::error!("{}", msg),
-    //             rusb::LogLevel::Warning => log::warn!("{}", msg),
-    //             rusb::LogLevel::Debug => log::debug!("{}", msg),
-    //             rusb::LogLevel::Info => log::info!("{}", msg),
-    //         }
-    //     }),
-    //     rusb::LogCallbackMode::Global,
-    // );
+    // NOTE it may seem suitable to add `<GlobalContext as rusb::UsbContext>::set_log_callback` as
+    //      of rusb v0.9.4 but it's limiting abstraction does not allow for a more complex case of
+    //      a Global logger (with a context pointer of null). The following is the best
+    //      implementation currently.
+    //
+    // See also https://github.com/dfu-rs/cargo-dfu/pull/12#issuecomment-5239407018
+    // See also https://github.com/a1ien/rusb/issues/227#issue-5041292972
 
     // See https://docs.rs/rusb/0.9.4/src/rusb/context.rs.html#70
     extern "system" fn static_log_callback(

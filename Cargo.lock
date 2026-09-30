@@ -79,6 +79,8 @@ dependencies = [
  "colored",
  "dfu-libusb",
  "goblin",
+ "libc",
+ "libusb1-sys",
  "log",
  "maplit",
  "pretty_env_logger",
